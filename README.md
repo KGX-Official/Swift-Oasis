@@ -1,4 +1,4 @@
-# `<name of application here>`
+# `Swift Oasis`
 
 ## Database Schema Design
 
