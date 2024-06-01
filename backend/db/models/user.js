@@ -13,6 +13,32 @@ module.exports = (sequelize, DataTypes) => {
   }
   User.init(
     {
+      firstName: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        validate: {
+          notEmpty: {
+            msg: 'Please provide a first name.'
+          },
+          len: [1,50],
+          isAlpha: {
+            msg: 'Please provide a valid name.'
+          }
+        }
+      },
+      lastName: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        validate: {
+          notEmpty: {
+            msg: 'Please provide a last name.'
+          },
+          len: [1,50],
+          isAlpha: {
+            msg: 'Please provide a valid name.'
+          }
+        }
+      },
       username: {
         type: DataTypes.STRING,
         allowNull: false,

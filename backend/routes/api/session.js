@@ -1,5 +1,5 @@
 const express = require("express");
-const { Op, where } = require("sequelize");
+const { Op } = require("sequelize");
 const bcrypt = require("bcryptjs");
 
 const { setTokenCookie, restoreUser } = require("../../utils/auth");
@@ -11,14 +11,14 @@ const { check } = require("express-validator");
 const { handleValidationErrors } = require("../../utils/validation");
 
 const validateLogin = [
-  check('credential')
+  check("credential")
     .exists({ checkFalsy: true })
     .notEmpty()
-    .withMessage('Please provide a valid email or username.'),
-  check('password')
+    .withMessage("Please provide a valid email or username."),
+  check("password")
     .exists({ checkFalsy: true })
-    .withMessage('Please provide a password.'),
-  handleValidationErrors
+    .withMessage("Please provide a password."),
+  handleValidationErrors,
 ];
 
 //Sign-In
@@ -44,6 +44,8 @@ router.post("/", validateLogin, async (req, res, next) => {
 
   const safeUser = {
     id: user.id,
+    firstName: user.firstName,
+    lastName: user.lastName,
     email: user.email,
     username: user.username,
   };
@@ -62,9 +64,12 @@ router.get("/", (req, res, _next) => {
   if (user) {
     const safeUser = {
       id: user.id,
-      username: user.username,
+      firstName: user.firstName,
+      lastName: user.lastName,
       email: user.email,
+      username: user.username,
     };
+
     return res.json({ user: safeUser });
   } else {
     return res.json({ user: null });
