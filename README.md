@@ -2,7 +2,7 @@
 
 ## Database Schema Design
 
-`<insert database schema design here>`
+![alt text](https://github.com/KGX-Official/Swift-Oasis/images/AirBnB Database.png?raw=true)
 
 ## API Documentation
 
