@@ -26,7 +26,7 @@ const spots = [
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await Spot.bulkCreate(spots, { validate: true });
+    await Spot.bulkCreate(spots, {});
   },
 
   async down(queryInterface, Sequelize) {
