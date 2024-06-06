@@ -1,6 +1,7 @@
 "use strict";
 
 const { Spot } = require("../models");
+console.log('spots model:   ', Spot)
 
 let options = {};
 if (process.env.NODE_ENV === "production") {
@@ -18,7 +19,7 @@ const spots = [
     lng: -122.4730327,
     name: "App Academy",
     description: "Place where web developers are created",
-    price: 123,
+    price: 123.00,
   },
 ];
 

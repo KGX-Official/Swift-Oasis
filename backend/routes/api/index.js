@@ -5,6 +5,7 @@ const spotsRouter = require("./spots.js");
 const { restoreUser, requireAuth } = require("../../utils/auth.js");
 
 router.use(restoreUser);
+router.use(requireAuth)
 
 router.use("/session", sessionRouter);
 router.use("/users", usersRouter);
