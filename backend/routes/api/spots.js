@@ -36,31 +36,27 @@ router.get("/", async (_req, res, _next) => {
 router.post("/", spotValidation, async (req, res, next) => {
   const { address, city, state, country, lat, lng, name, description, price } =
     req.body;
-  try {
-    const spot = await Spot.create({
-      address,
-      city,
-      state,
-      country,
-      lat,
-      lng,
-      name,
-      description,
-      price,
-    });
 
-    return res.status(201).json(spot);
-  } catch (error) {
-    next(error);
-  }
+  const spot = await Spot.create({
+    address,
+    city,
+    state,
+    country,
+    lat,
+    lng,
+    name,
+    description,
+    price,
+  });
+
+  return res.status(201).json(spot);
 });
 
-router.put('/:spotId', async (req, res, next) => {
+router.put("/:spotId", async (req, res, next) => {
   try {
-    
   } catch (error) {
-    next()
+    next();
   }
-})
+});
 
 module.exports = router;
