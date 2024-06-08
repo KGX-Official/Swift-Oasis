@@ -1,8 +1,8 @@
 const express = require("express");
 const router = express.Router();
-
+const { requireAuth } = require("../../utils/auth");
 const { Spot } = require("../../db/models");
-
+const { Image } = require("../../db/models");
 const { check } = require("express-validator");
 const { handleValidationErrors } = require("../../utils/validation");
 
@@ -28,12 +28,36 @@ const spotValidation = [
   handleValidationErrors,
 ];
 
+//Get All Spots
 router.get("/", async (_req, res, _next) => {
   const allSpots = await Spot.findAll();
   return res.json(allSpots);
 });
 
-router.post("/", spotValidation, async (req, res, next) => {
+//Get Current User Spots
+router.get("/current", requireAuth, async (req, res, _next) => {
+  const currentUserSpots = await Spot.findAll({
+    where: {
+      ownerId: req.user.id,
+    },
+  });
+  return res.status(200).json(currentUserSpots);
+});
+
+//Get Spot Details
+router.get("/:spotId", async (req, res, next) => {
+  const spot = await Spot.findByPk(req.params.spotId);
+
+  if (!spot) {
+    return res.json(404).json({
+      message: "Spot couldn't be found",
+    });
+  }
+  return res.status(200).json(spot);
+});
+
+//Create Spot
+router.post("/", requireAuth, spotValidation, async (req, res, _next) => {
   const { address, city, state, country, lat, lng, name, description, price } =
     req.body;
 
@@ -52,11 +76,84 @@ router.post("/", spotValidation, async (req, res, next) => {
   return res.status(201).json(spot);
 });
 
-router.put("/:spotId", async (req, res, next) => {
-  try {
-  } catch (error) {
-    next();
+//Add Image to Spot
+router.post("/:spotId/images", requireAuth, async (req, res, next) => {
+  const spot = await Spot.findByPk(req.params.spotId);
+
+  if (!spot) {
+    return res.status(404).json({
+      message: "Spot couldn't be found",
+    });
   }
+
+  if (spot.ownerId !== req.user.id) {
+    return res
+      .status(403)
+      .json({ error: "You do not have permission to update this spot" });
+  }
+
+  const { url, preview } = req.body;
+
+  await Image.create({
+    imageableId: Spot.id,
+    imageableType: "Spot",
+    url,
+    preview: true,
+  });
+
+  return res.status(201).json({
+    id,
+    url,
+    preview,
+  });
+});
+
+//Edit Spot
+router.put("/:spotId", requireAuth, spotValidation, async (req, res, _next) => {
+  const spot = await Spot.findByPk(req.params.spotId);
+
+  if (!spot) {
+    return res.status(404).json({ error: "Spot couldn't be found" });
+  }
+
+  if (spot.ownerId !== req.user.id) {
+    return res
+      .status(403)
+      .json({ error: "You do not have permission to update this spot" });
+  }
+
+  const { address, city, state, country, lat, lng, name, description, price } =
+    req.body;
+
+  await spot.update([
+    {
+      address,
+      city,
+      state,
+      country,
+      lat,
+      lng,
+      name,
+      description,
+      price,
+    },
+  ]);
+
+  return res.status(200).json(spot);
+});
+
+//Delete Spot
+router.delete("/:spotId", async (req, res, _next) => {
+  const spot = await Spot.findByPk(req.params.spotId);
+
+  if (!spot) {
+    return res.status(404).json({ error: "Spot couldn't be found" });
+  }
+  await spot.destroy();
+
+  return res.status(200).json({
+    message: " Successfully deleted",
+  });
 });
 
 module.exports = router;
