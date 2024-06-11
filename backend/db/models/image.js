@@ -1,7 +1,5 @@
-'use strict';
-const {
-  Model
-} = require('sequelize');
+"use strict";
+const { Model } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
   class Image extends Model {
     getImageable(options) {
@@ -21,30 +19,34 @@ module.exports = (sequelize, DataTypes) => {
       // });
     }
   }
-  Image.init({
-    imageableId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
+  Image.init(
+    {
+      imageableId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+      },
+      imageableType: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      url: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        validate: {
+          len: [1, 255],
+          notEmpty: true,
+        },
+      },
+      preview: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
+      },
     },
-    imageableType: {
-      type:DataTypes.STRING,
-      allowNull: false,
-    },
-    url: {
-      type:DataTypes.STRING,
-      allowNull: false,
-      validate: {
-        len: [1,255]
-      }
-    },
-    preview: {
-      type:DataTypes.BOOLEAN,
-      allowNull: false,
-      defaultValue: false
-    },
-  }, {
-    sequelize,
-    modelName: 'Image',
-  });
+    {
+      sequelize,
+      modelName: "Image",
+    }
+  );
   return Image;
 };
