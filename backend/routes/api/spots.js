@@ -95,10 +95,10 @@ router.post("/:spotId/images", requireAuth, async (req, res, next) => {
   const { url, preview } = req.body;
 
   await Image.create({
-    imageableId: Spot.id,
+    imageableId: parseInt(req.params.spotId),
     imageableType: "Spot",
-    url,
-    preview: true,
+    url: url,
+    preview: preview,
   });
 
   return res.status(201).json({
