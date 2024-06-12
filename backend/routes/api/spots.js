@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const { requireAuth } = require("../../utils/auth");
-const { Spot, Image, Review } = require("../../db/models");
+const { User, Spot, Image, Review } = require("../../db/models");
 const { spotValidation, reviewValidation } = require("../../utils/validation");
 
 // const checkSpotStatus = async () => {
