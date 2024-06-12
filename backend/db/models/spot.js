@@ -15,6 +15,9 @@ module.exports = (sequelize, DataTypes) => {
           imageableType: "Spot",
         },
       });
+      Spot.belongsTo(models.User, {
+        foreignKey: "userId",
+      });
     }
   }
   Spot.init(
@@ -25,7 +28,7 @@ module.exports = (sequelize, DataTypes) => {
         validate: {
           notEmpty: true,
           isNumeric: true,
-          min: 1
+          min: 1,
         },
       },
       address: {
@@ -66,7 +69,7 @@ module.exports = (sequelize, DataTypes) => {
         validate: {
           notEmpty: true,
           min: -90,
-          max: 90
+          max: 90,
         },
       },
       lng: {
@@ -75,7 +78,7 @@ module.exports = (sequelize, DataTypes) => {
         validate: {
           notEmpty: true,
           min: -180,
-          max: 180
+          max: 180,
         },
       },
       name: {

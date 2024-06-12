@@ -15,36 +15,35 @@ module.exports = (sequelize, DataTypes) => {
           imageableType: "Review",
         },
       });
+      Review.belongsTo(models.User, {
+        foreignKey: "userId",
+      });
     }
   }
   Review.init(
     {
       userId: {
         type: DataTypes.INTEGER,
-        allowNull:false,
-
+        allowNull: false,
       },
       spotId: {
         type: DataTypes.INTEGER,
-        allowNull:false,
-
+        allowNull: false,
       },
       review: {
         type: DataTypes.TEXT,
-        allowNull:false,
+        allowNull: false,
         validate: {
-          notEmpty: true
-        }
-
+          notEmpty: true,
+        },
       },
       stars: {
         type: DataTypes.INTEGER,
-        allowNull:false,
+        allowNull: false,
         validate: {
-          len: [1,5]
-        }
-
-      }
+          len: [1, 5],
+        },
+      },
     },
     {
       sequelize,

@@ -9,11 +9,11 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       User.hasMany(models.Review, {
-        foreignKey: 'userId'
-      })
+        foreignKey: "userId",
+      });
       User.hasMany(models.Spot, {
-        foreignKey: 'userId',
-      })
+        foreignKey: "userId",
+      });
       // User.hasMany(models.Booking, {
       //   foreignKey: 'userId'
       // })
@@ -26,26 +26,26 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
         validate: {
           notEmpty: {
-            msg: 'Please provide a first name.'
+            msg: "Please provide a first name.",
           },
-          len: [1,50],
+          len: [1, 50],
           isAlpha: {
-            msg: 'Please provide a valid name.'
-          }
-        }
+            msg: "Please provide a valid name.",
+          },
+        },
       },
       lastName: {
         type: DataTypes.STRING,
         allowNull: false,
         validate: {
           notEmpty: {
-            msg: 'Please provide a last name.'
+            msg: "Please provide a last name.",
           },
-          len: [1,50],
+          len: [1, 50],
           isAlpha: {
-            msg: 'Please provide a valid name.'
-          }
-        }
+            msg: "Please provide a valid name.",
+          },
+        },
       },
       username: {
         type: DataTypes.STRING,
