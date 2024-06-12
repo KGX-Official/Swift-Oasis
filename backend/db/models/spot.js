@@ -16,7 +16,7 @@ module.exports = (sequelize, DataTypes) => {
         },
       });
       Spot.belongsTo(models.User, {
-        foreignKey: "userId",
+        foreignKey: "ownerId",
       });
     }
   }
