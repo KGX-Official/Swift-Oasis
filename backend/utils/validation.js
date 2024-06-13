@@ -52,6 +52,31 @@ const reviewValidation = [
   handleValidationErrors,
 ];
 
+const bookingValidation = [
+  check("startDate")
+    .notEmpty()
+    .withMessage("Start date is required")
+    .custom((value) => {
+      const currentDate = new Date();
+      const startDate = new Date(value);
+      if (startDate <= currentDate) {
+        throw new Error("startDate cannot be in the past");
+      }
+      return true;
+    }),
+  check("endDate")
+    .notEmpty()
+    .withMessage("End date is required")
+    .custom((value, { req }) => {
+      const startDate = new Date(req.body.startDate);
+      const endDate = new Date(value);
+      if (endDate <= startDate) {
+        throw new Error("endDate cannot be on or before startDate");
+      }
+      return true;
+    }),
+];
+
 module.exports = {
-  handleValidationErrors, spotValidation, reviewValidation
+  handleValidationErrors, spotValidation, reviewValidation, bookingValidation
 };
