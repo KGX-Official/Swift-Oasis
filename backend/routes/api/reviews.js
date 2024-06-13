@@ -64,6 +64,7 @@ router.post('/:reviewId/images', requireAuth, async (req, res, _next) => {
     })
 })
 
+//Edit Review
 router.put("/:reviewId", requireAuth, reviewValidation, async (req, res, next) => {
      const review = await Review.findByPk(req.params.reviewId);
 

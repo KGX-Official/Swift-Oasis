@@ -7,7 +7,7 @@ if (process.env.NODE_ENV === "production") {
   options.schema = process.env.SCHEMA;
 }
 
-const spots = [
+const demoSpots = [
   {
     ownerId: 1,
     address: "123 Disney Lane",
@@ -61,7 +61,7 @@ const spots = [
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(_queryInterface, _Sequelize) {
-    await Spot.bulkCreate(spots, {});
+    await Spot.bulkCreate(demoSpots, {});
   },
 
   async down(queryInterface, _Sequelize) {
