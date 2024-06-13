@@ -1,7 +1,6 @@
 "use strict";
 
 const { Spot } = require("../models");
-console.log('spots model:   ', Spot)
 
 let options = {};
 if (process.env.NODE_ENV === "production") {
@@ -61,11 +60,11 @@ const spots = [
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
-  async up(queryInterface, Sequelize) {
+  async up(_queryInterface, _Sequelize) {
     await Spot.bulkCreate(spots, {});
   },
 
-  async down(queryInterface, Sequelize) {
+  async down(queryInterface, _Sequelize) {
     options.tableName = "Spots";
     return queryInterface.bulkDelete(options);
   },
