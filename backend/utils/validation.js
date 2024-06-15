@@ -1,5 +1,5 @@
 // backend/utils/validation.js
-const { validationResult, check } = require("express-validator");
+const { validationResult, check, query } = require("express-validator");
 const { Op } = require("sequelize");
 const { Booking } = require("../db/models");
 // middleware for formatting errors from express-validator middleware
@@ -113,10 +113,45 @@ const checkBookingConflict = async (req, res, next) => {
   next();
 };
 
+const queryValidation = [
+  query("page")
+    .isInt({ min: 1 })
+    .withMessage("Page must be greater than or equal to 1"),
+  query("size")
+    .isInt({ min: 1, max: 20 })
+    .withMessage("Size must be between 1 and 20"),
+  query("minLat")
+    .optional()
+    .isDecimal()
+    .withMessage("Minimum latitude is invalid"),
+  query("maxLat")
+    .optional()
+    .isDecimal()
+    .withMessage("Maximum latitude is invalid"),
+  query("minLng")
+    .optional()
+    .isDecimal()
+    .withMessage("Minimum longitude is invalid"),
+  query("maxLng")
+    .optional()
+    .isDecimal()
+    .withMessage("Maximum longitude is invalid"),
+  query("minPrice")
+    .optional()
+    .isDecimal({ min: 0 })
+    .withMessage("Minimum price must be greater than or equal to 0"),
+  query("maxPrice")
+    .optional()
+    .isDecimal({ min: 0 })
+    .withMessage("Maximum price must be greater than or equal to 0"),
+  handleValidationErrors,
+];
+
 module.exports = {
   handleValidationErrors,
   spotValidation,
   reviewValidation,
   bookingValidation,
   checkBookingConflict,
+  queryValidation,
 };

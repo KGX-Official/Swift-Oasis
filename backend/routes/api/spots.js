@@ -7,12 +7,34 @@ const {
   reviewValidation,
   bookingValidation,
   checkBookingConflict,
+  queryValidation,
 } = require("../../utils/validation");
 
 //Get All Spots
-router.get("/", async (_req, res, _next) => {
-  const allSpots = await Spot.findAll();
-  return res.json(allSpots);
+router.get("/", queryValidation, async (req, res, _next) => {
+  let { page, size, minLat, maxLat, minLng, maxLng, minPrice, maxPrice } =
+    req.query;
+
+  page = parseInt(req.query.page, 10) || 1;
+  size = parseInt(req.query.size, 10) || 20;
+
+  if (size > 20) {
+    size = 20;
+  }
+
+  const limit = size;
+  const offset = size * (page - 1);
+
+  const allSpots = await Spot.findAll({
+    limit,
+    offset,
+  });
+
+  return res.json({
+    allSpots,
+    page,
+    size,
+  });
 });
 
 //Get Current User Spots
