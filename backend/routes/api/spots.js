@@ -49,7 +49,23 @@ router.get("/current", requireAuth, async (req, res, _next) => {
 
 //Get Spot Details
 router.get("/:spotId", async (req, res, next) => {
-  const spot = await Spot.findByPk(req.params.spotId);
+  const spot = await Spot.findByPk({
+    where: {
+      id: req.params.spotId,
+    },
+    include: [
+      {
+        model: Image,
+        as: "SpotImages", //Aliasing the model
+        attributes: ["id", "url", "preview"],
+      },
+      {
+        model: User,
+        as: "Owner",
+        attributes: ["id", "firstName", "lastName"]
+      }
+    ],
+  });
 
   if (!spot) {
     return res.status(404).json({ error: "Spot couldn't be found" });
