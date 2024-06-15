@@ -13,10 +13,11 @@ module.exports = (sequelize, DataTypes) => {
       });
       User.hasMany(models.Spot, {
         foreignKey: "ownerId",
+        as: "Owner",
       });
-      // User.hasMany(models.Booking, {
-      //   foreignKey: 'userId'
-      // })
+      User.hasMany(models.Booking, {
+        foreignKey: "userId",
+      });
     }
   }
   User.init(

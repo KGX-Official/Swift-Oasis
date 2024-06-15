@@ -11,12 +11,14 @@ module.exports = (sequelize, DataTypes) => {
       Spot.hasMany(models.Image, {
         foreignKey: "imageableId",
         constraints: false,
+        as: "SpotImages",
         scope: {
           imageableType: "Spot",
         },
       });
       Spot.belongsTo(models.User, {
         foreignKey: "ownerId",
+        as: "Owner"
       });
     }
   }
