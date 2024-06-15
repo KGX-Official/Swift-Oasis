@@ -5,10 +5,9 @@ const spotsRouter = require("./spots.js");
 const reviewsRouter = require("./reviews.js");
 const bookingsRouter = require("./bookings.js");
 
-const { restoreUser } = require("../../utils/auth.js");
+const { restoreUser, requireAuth } = require("../../utils/auth.js");
 
 const { Image, Review, Spot } = require("../../db/models");
-const { requireAuth } = require("../../utils/validation.js");
 
 router.use(restoreUser);
 
@@ -25,7 +24,7 @@ router.use("/bookings", bookingsRouter);
 
 //Delete Spot Image
 router.delete("/spot-images/:imageId", requireAuth, async (req, res, _next) => {
-  const image = await Image.findByPk({
+  const image = await Image.findOne({
     where: {
       imageableId: req.params.imageId,
       imageableType: "Spot",
@@ -55,7 +54,7 @@ router.delete(
   "/review-images/:imageId",
   requireAuth,
   async (req, res, _next) => {
-    const image = await Image.findByPk({
+    const image = await Image.findOne({
       where: {
         imageableId: req.params.imageId,
         imageableType: "Review",
