@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const sequelize = require("sequelize");
 const { requireAuth } = require("../../utils/auth");
 const { User, Spot, Image, Review, Booking } = require("../../db/models");
 const {
@@ -26,6 +27,17 @@ router.get("/", queryValidation, async (req, res, _next) => {
   const offset = size * (page - 1);
 
   const allSpots = await Spot.findAll({
+    attributes: {
+      include: [
+        [sequelize.fn("AVG", sequelize.col("Review.stars")), "avgStarRating"],
+        [
+          sequelize.literal(
+            "(SELECT url FROM Images WHERE Images.imageableId = Spot.id AND imageableType = 'Spot' LIMIT 1)"
+          ),
+          "previewImage",
+        ],
+      ],
+    },
     limit,
     offset,
   });
@@ -49,11 +61,26 @@ router.get("/current", requireAuth, async (req, res, _next) => {
 
 //Get Spot Details
 router.get("/:spotId", async (req, res, next) => {
-  const spot = await Spot.findByPk({
+  const spot = await Spot.findOne({
     where: {
       id: req.params.spotId,
     },
+    attribute: {
+      include: [
+        [
+          sequelize.literal(
+            "(SELECT COUNT(*) FROM Reviews WHERE Spot.id = Review.spotId)"
+          ),
+          "numReviews",
+        ],
+        [sequelize.fn("AVG", sequelize.col("Review.stars")), "avgStarRating"],
+      ],
+    },
     include: [
+      {
+        model: Review,
+        attributes: [],
+      },
       {
         model: Image,
         as: "SpotImages", //Aliasing the model
@@ -62,9 +89,10 @@ router.get("/:spotId", async (req, res, next) => {
       {
         model: User,
         as: "Owner",
-        attributes: ["id", "firstName", "lastName"]
-      }
+        attributes: ["id", "firstName", "lastName"],
+      },
     ],
+    group: ["Spot.id"],
   });
 
   if (!spot) {
