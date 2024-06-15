@@ -1,8 +1,13 @@
 const express = require("express");
 const router = express.Router();
 const { requireAuth } = require("../../utils/auth");
-const { User, Spot, Image, Review } = require("../../db/models");
-const { spotValidation, reviewValidation } = require("../../utils/validation");
+const { User, Spot, Image, Review, Booking } = require("../../db/models");
+const {
+  spotValidation,
+  reviewValidation,
+  bookingValidation,
+  checkBookingConflict,
+} = require("../../utils/validation");
 
 // const checkSpotStatus = async () => {
 //   const spot = await Spot.findByPk(req.params.spotId);
@@ -131,6 +136,13 @@ router.delete("/:spotId", async (req, res, _next) => {
   if (!spot) {
     return res.status(404).json({ error: "Spot couldn't be found" });
   }
+
+  if (spot.ownerId !== req.user.id) {
+    return res
+      .status(403)
+      .json({ error: "You do not have permission to remove this spot" });
+  }
+
   await spot.destroy();
 
   return res.status(200).json({
@@ -203,4 +215,69 @@ router.post(
   }
 );
 
+//Get all Bookings for a Spot
+router.get("/:spotId/bookings", requireAuth, async (req, res, _next) => {
+  const spot = await Spot.findByPk(req.params.spotId);
+
+  if (!spot) {
+    return res.status(404).json({ error: "Spot couldn't be found" });
+  }
+
+  //If you ARE NOT the owner
+  const currentBookings = await Booking.findAll({
+    attributes: ["spotId", "startDate", "endDate"],
+    where: {
+      spotId: req.params.spotId,
+    },
+  });
+  if (spot.ownerId !== req.user.id) {
+    return res.status(200).json({
+      Bookings: currentBookings,
+    });
+  }
+
+  //If you ARE the owner
+  const currentBookingDetails = await Booking.findAll({
+    where: {
+      spotId: req.params.spotId,
+    },
+    include: [
+      {
+        model: User,
+        attributes: ["id", "firstName", "lastName"],
+      },
+    ],
+  });
+  if (spot.ownerId === req.user.id) {
+    return res.status(200).json({
+      Bookings: currentBookingDetails,
+    });
+  }
+});
+
+//Create New Booking
+router.post(
+  "/:spotId/bookings",
+  requireAuth,
+  bookingValidation,
+  checkBookingConflict,
+  async (req, res, _next) => {
+    const spot = await Spot.findByPk(req.params.spotId);
+
+    if (!spot) {
+      return res.status(404).json({ error: "Spot couldn't be found" });
+    }
+
+    const { startDate, endDate } = req.body;
+
+    const newBooking = await Booking.create({
+      spotId: req.params.spotId,
+      userId: req.user.id,
+      startDate: startDate,
+      endDate: endDate,
+    });
+
+    return res.status(201).json(newBooking);
+  }
+);
 module.exports = router;
