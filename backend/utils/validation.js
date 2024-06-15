@@ -1,8 +1,10 @@
 // backend/utils/validation.js
 const { validationResult, check } = require("express-validator");
-
+const { Op } = require("sequelize");
+const { Booking } = require("../db/models");
 // middleware for formatting errors from express-validator middleware
 // (to customize, see express-validator's documentation)
+
 const handleValidationErrors = (req, _res, next) => {
   const validationErrors = validationResult(req);
 
@@ -77,6 +79,44 @@ const bookingValidation = [
     }),
 ];
 
+const checkBookingConflict = async (req, res, next) => {
+  const { spotId } = req.params;
+  const { startDate, endDate } = req.body;
+
+  const existingBooking = await Booking.findAll({
+    where: {
+      spotId,
+      [Op.or]: [
+        //Check for overlapping dates
+        { startDate: { [Op.between]: [startDate, endDate] } },
+        { endDate: { [Op.between]: [startDate, endDate] } },
+        {
+          [Op.and]: [
+            { startDate: { [Op.lte]: startDate } },
+            { endDate: { [Op.gte]: endDate } },
+          ],
+        },
+      ],
+    },
+  });
+
+  if (existingBooking.length > 0) {
+    return res.status(403).json({
+      message: "Sorry, this spot is already booked for the specified dates",
+      errors: {
+        startDate: "Start date conflicts with an existing booking",
+        endDate: "End date conflicts with an existing booking",
+      },
+    });
+  }
+
+  next();
+};
+
 module.exports = {
-  handleValidationErrors, spotValidation, reviewValidation, bookingValidation
+  handleValidationErrors,
+  spotValidation,
+  reviewValidation,
+  bookingValidation,
+  checkBookingConflict,
 };
