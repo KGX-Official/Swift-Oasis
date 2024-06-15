@@ -9,16 +9,6 @@ const {
   checkBookingConflict,
 } = require("../../utils/validation");
 
-// const checkSpotStatus = async () => {
-//   const spot = await Spot.findByPk(req.params.spotId);
-
-//   if (!spot) {
-//     return res.status(404).json({ error: "Spot couldn't be found" });
-//   }
-
-//   return spot;
-// };
-
 //Get All Spots
 router.get("/", async (_req, res, _next) => {
   const allSpots = await Spot.findAll();
