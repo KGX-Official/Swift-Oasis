@@ -143,9 +143,11 @@ const checkBookingConflict = async (req, res, next) => {
 
 const queryValidation = [
   query("page")
+    .optional()
     .isInt({ min: 1 })
     .withMessage("Page must be greater than or equal to 1"),
   query("size")
+    .optional()
     .isInt({ min: 1, max: 20 })
     .withMessage("Size must be between 1 and 20"),
   query("minLat")
