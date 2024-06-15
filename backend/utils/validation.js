@@ -23,6 +23,23 @@ const handleValidationErrors = (req, _res, next) => {
   next();
 };
 
+const validateSignUp = [
+  check("email")
+    .exists({ checkFalsy: true })
+    .isEmail()
+    .withMessage("Please provide a valid email."),
+  check("username")
+    .exists({ checkFalsy: true })
+    .isLength({ min: 4 })
+    .withMessage("Please provide a username with at least 4 characters."),
+  check("username").not().isEmail().withMessage("Username cannot be an email."),
+  check("password")
+    .exists({ checkFalsy: true })
+    .isLength({ min: 6 })
+    .withMessage("Password must be 6 characters or more."),
+  handleValidationErrors,
+];
+
 const spotValidation = [
   check("address").notEmpty().withMessage("Street address is required"),
   check("city").notEmpty().withMessage("City is required"),
@@ -149,6 +166,7 @@ const queryValidation = [
 
 module.exports = {
   handleValidationErrors,
+  validateSignUp,
   spotValidation,
   reviewValidation,
   bookingValidation,
