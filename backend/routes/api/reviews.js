@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const sequelize = require("sequelize");
 const { requireAuth } = require("../../utils/auth");
-const { Review, Image, Spot } = require("../../db/models");
+const { Review, Image, Spot, User } = require("../../db/models");
 const { reviewValidation } = require("../../utils/validation");
 
 //Get Current User Reviews
@@ -29,9 +29,9 @@ router.get("/current", requireAuth, async (req, res, _next) => {
           "lng",
           "name",
           "price",
-          [
+          [//Use Spot.id due to nesting
             sequelize.literal(
-              "(SELECT url FROM Images WHERE Images.imageableId = Review.id AND imageableType = 'Review' LIMIT 1)"
+              "(SELECT url FROM Images WHERE Images.imageableId = Spot.id AND imageableType = 'Spot' LIMIT 1)"
             ),
             "previewImage",
           ],
@@ -44,7 +44,9 @@ router.get("/current", requireAuth, async (req, res, _next) => {
       },
     ],
   });
-  return res.status(200).json(currentUserReviews);
+  return res.status(200).json({
+    Reviews: currentUserReviews,
+  });
 });
 
 //Add Review Image

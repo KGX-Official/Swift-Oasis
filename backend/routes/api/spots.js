@@ -26,40 +26,44 @@ router.get("/", queryValidation, async (req, res, _next) => {
   const limit = size;
   const offset = size * (page - 1);
 
+  const avgStarRating = [
+    sequelize.literal(
+      "(SELECT AVG(stars) FROM Reviews WHERE Reviews.spotId = Spot.id)"
+    ),
+    "avgRating",
+  ];
+
+  const previewImage = [
+    sequelize.literal(
+      "(SELECT url FROM Images WHERE Images.imageableId = Spot.id AND imageableType = 'Spot' LIMIT 1)"
+    ),
+    "previewImage",
+  ];
+
   const allSpots = await Spot.findAll({
-    attributes: {
-      where: {
-        id: req.params.spotId,
-      },
-      attributes: [
-        "id",
-        "ownerId",
-        "address",
-        "city",
-        "state",
-        "country",
-        "lat",
-        "lng",
-        "name",
-        "description",
-        "price",
-        "createdAt",
-        "updatedAt",
-        [sequelize.fn("AVG", sequelize.col("Reviews.stars")), "avgStarRating"],
-        [
-          sequelize.literal(
-            "(SELECT url FROM Images WHERE Images.imageableId = Spot.id AND imageableType = 'Spot' LIMIT 1)"
-          ),
-          "previewImage",
-        ],
-      ],
-    },
+    attributes: [
+      "id",
+      "ownerId",
+      "address",
+      "city",
+      "state",
+      "country",
+      "lat",
+      "lng",
+      "name",
+      "description",
+      "price",
+      "createdAt",
+      "updatedAt",
+      avgStarRating,
+      previewImage,
+    ],
     limit,
     offset,
   });
 
   return res.json({
-    Spots:allSpots,
+    Spots: allSpots,
     page,
     size,
   });
@@ -77,6 +81,20 @@ router.get("/current", requireAuth, async (req, res, _next) => {
 
 //Get Spot Details
 router.get("/:spotId", async (req, res, next) => {
+  const avgStarRating = [
+    sequelize.literal(
+      "(SELECT AVG(stars) FROM Reviews WHERE Reviews.spotId = Spot.id)"
+    ),
+    "avgStarRating",
+  ];
+
+  const numReviews = [
+    sequelize.literal(
+      "(SELECT COUNT(*) FROM Reviews WHERE Reviews.spotId = Spot.id)"
+    ),
+    "numReviews",
+  ];
+
   const spot = await Spot.findOne({
     where: {
       id: req.params.spotId,
@@ -95,25 +113,16 @@ router.get("/:spotId", async (req, res, next) => {
       "price",
       "createdAt",
       "updatedAt",
-      [
-        sequelize.literal(
-          "(SELECT COUNT(*) FROM Reviews WHERE Spot.id = Reviews.spotId)"
-        ),
-        "numReviews",
-      ],
-      [sequelize.fn("AVG", sequelize.col("Reviews.stars")), "avgStarRating"],
+      numReviews,
+      avgStarRating,
     ],
     include: [
-      {
-        model: Review,
-        attributes: [],
-      },
       {
         model: Image,
         as: "SpotImages", //Aliasing the model
         where: {
           imageableId: req.params.spotId,
-          imageableType: "Spot"
+          imageableType: "Spot",
         },
         attributes: ["id", "url", "preview"],
       },
@@ -123,7 +132,7 @@ router.get("/:spotId", async (req, res, next) => {
         attributes: ["id", "firstName", "lastName"],
       },
     ],
-    group: ["Spot.id"],
+    // group: ["Spot.id"],
   });
 
   if (!spot) {
@@ -138,6 +147,7 @@ router.post("/", requireAuth, spotValidation, async (req, res, _next) => {
     req.body;
 
   const spot = await Spot.create({
+    ownerId: req.user.id,
     address,
     city,
     state,
@@ -171,7 +181,7 @@ router.post("/:spotId/images", requireAuth, async (req, res, next) => {
   const { url, preview } = req.body;
 
   const newImage = await Image.create({
-    imageableId: parseInt(req.params.spotId),
+    imageableId: req.params.spotId,
     imageableType: "Spot",
     url: url,
     preview: preview,

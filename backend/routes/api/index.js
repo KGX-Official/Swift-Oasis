@@ -26,7 +26,7 @@ router.use("/bookings", bookingsRouter);
 router.delete("/spot-images/:imageId", requireAuth, async (req, res, _next) => {
   const image = await Image.findOne({
     where: {
-      imageableId: req.params.imageId,
+      id: req.params.imageId,
       imageableType: "Spot",
     },
   });
@@ -56,7 +56,7 @@ router.delete(
   async (req, res, _next) => {
     const image = await Image.findOne({
       where: {
-        imageableId: req.params.imageId,
+        id: req.params.imageId,
         imageableType: "Review",
       },
     });
