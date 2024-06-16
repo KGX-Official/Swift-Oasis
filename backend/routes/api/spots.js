@@ -28,8 +28,24 @@ router.get("/", queryValidation, async (req, res, _next) => {
 
   const allSpots = await Spot.findAll({
     attributes: {
-      include: [
-        [sequelize.fn("AVG", sequelize.col("Review.stars")), "avgStarRating"],
+      where: {
+        id: req.params.spotId,
+      },
+      attributes: [
+        "id",
+        "ownerId",
+        "address",
+        "city",
+        "state",
+        "country",
+        "lat",
+        "lng",
+        "name",
+        "description",
+        "price",
+        "createdAt",
+        "updatedAt",
+        [sequelize.fn("AVG", sequelize.col("Reviews.stars")), "avgStarRating"],
         [
           sequelize.literal(
             "(SELECT url FROM Images WHERE Images.imageableId = Spot.id AND imageableType = 'Spot' LIMIT 1)"
@@ -43,7 +59,7 @@ router.get("/", queryValidation, async (req, res, _next) => {
   });
 
   return res.json({
-    allSpots,
+    Spots:allSpots,
     page,
     size,
   });
@@ -65,17 +81,28 @@ router.get("/:spotId", async (req, res, next) => {
     where: {
       id: req.params.spotId,
     },
-    attribute: {
-      include: [
-        [
-          sequelize.literal(
-            "(SELECT COUNT(*) FROM Reviews WHERE Spot.id = Review.spotId)"
-          ),
-          "numReviews",
-        ],
-        [sequelize.fn("AVG", sequelize.col("Review.stars")), "avgStarRating"],
+    attributes: [
+      "id",
+      "ownerId",
+      "address",
+      "city",
+      "state",
+      "country",
+      "lat",
+      "lng",
+      "name",
+      "description",
+      "price",
+      "createdAt",
+      "updatedAt",
+      [
+        sequelize.literal(
+          "(SELECT COUNT(*) FROM Reviews WHERE Spot.id = Reviews.spotId)"
+        ),
+        "numReviews",
       ],
-    },
+      [sequelize.fn("AVG", sequelize.col("Reviews.stars")), "avgStarRating"],
+    ],
     include: [
       {
         model: Review,
@@ -84,6 +111,10 @@ router.get("/:spotId", async (req, res, next) => {
       {
         model: Image,
         as: "SpotImages", //Aliasing the model
+        where: {
+          imageableId: req.params.spotId,
+          imageableType: "Spot"
+        },
         attributes: ["id", "url", "preview"],
       },
       {
@@ -139,7 +170,7 @@ router.post("/:spotId/images", requireAuth, async (req, res, next) => {
 
   const { url, preview } = req.body;
 
-  await Image.create({
+  const newImage = await Image.create({
     imageableId: parseInt(req.params.spotId),
     imageableType: "Spot",
     url: url,
@@ -147,9 +178,9 @@ router.post("/:spotId/images", requireAuth, async (req, res, next) => {
   });
 
   return res.status(201).json({
-    id,
-    url,
-    preview,
+    id: newImage.id,
+    url: newImage.url,
+    preview: newImage.preview,
   });
 });
 
