@@ -26,19 +26,19 @@ router.get("/", queryValidation, async (req, res, _next) => {
   const limit = size;
   const offset = size * (page - 1);
 
-  const avgStarRating = [
-    sequelize.literal(
-      "(SELECT AVG(stars) FROM Reviews WHERE Reviews.spotId = Spot.id)"
-    ),
-    "avgRating",
-  ];
+  // const avgStarRating = [
+  //   sequelize.literal(
+  //     "(SELECT AVG(stars) FROM Reviews WHERE Reviews.spotId = Spot.id)"
+  //   ),
+  //   "avgRating",
+  // ];
 
-  const previewImage = [
-    sequelize.literal(
-      "(SELECT url FROM Images WHERE Images.imageableId = Spot.id AND imageableType = 'Spot' LIMIT 1)"
-    ),
-    "previewImage",
-  ];
+  // const previewImage = [
+  //   sequelize.literal(
+  //     "(SELECT url FROM Images WHERE Images.imageableId = Spot.id AND imageableType = 'Spot' LIMIT 1)"
+  //   ),
+  //   "previewImage",
+  // ];
 
   const allSpots = await Spot.findAll({
     attributes: [
@@ -55,8 +55,8 @@ router.get("/", queryValidation, async (req, res, _next) => {
       "price",
       "createdAt",
       "updatedAt",
-      avgStarRating,
-      previewImage,
+      // avgStarRating,
+      // previewImage,
     ],
     limit,
     offset,
@@ -299,9 +299,7 @@ router.delete("/:spotId", requireAuthentication, async (req, res, _next) => {
   }
 
   if (spot.ownerId !== req.user.id) {
-    return res
-      .status(403)
-      .json({ message: "Forbidden" });
+    return res.status(403).json({ message: "Forbidden" });
   }
 
   await spot.destroy();
