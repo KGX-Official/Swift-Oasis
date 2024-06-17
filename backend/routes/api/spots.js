@@ -33,36 +33,23 @@ router.get("/", queryValidation, async (req, res, _next) => {
   const offset = size * (page - 1);
 
   const allSpots = await Spot.findAll({
-    attributes: [
-      "id",
-      "ownerId",
-      "address",
-      "city",
-      "state",
-      "country",
-      "lat",
-      "lng",
-      "name",
-      "description",
-      "price",
-      "createdAt",
-      "updatedAt",
-    ],
-    include: [
-      [
-        Sequelize.literal(
-          `(SELECT AVG("stars") FROM "swift_oasis"."Reviews" WHERE "swift_oasis"."Reviews"."spotId" = "Spot"."id")`
-        ),
-        "avgRating",
-      ],
+    attributes: {
+      include: [
+        [
+          Sequelize.literal(
+            `(SELECT AVG("stars") FROM "swift_oasis"."Reviews" WHERE "swift_oasis"."Reviews"."spotId" = "Spot"."id")`
+          ),
+          "avgRating",
+        ],
 
-      [
-        Sequelize.literal(
-          `(SELECT "url" FROM "swift_oasis"."Images" WHERE "swift_oasis"."Images"."imageableId" = "Spot"."id" AND "swift_oasis"."Images"."imageableType" = 'Spot' LIMIT 1)`
-        ),
-        "previewImage",
+        [
+          Sequelize.literal(
+            `(SELECT "url" FROM "swift_oasis"."Images" WHERE "swift_oasis"."Images"."imageableId" = "Spot"."id" AND "swift_oasis"."Images"."imageableType" = 'Spot' LIMIT 1)`
+          ),
+          "previewImage",
+        ],
       ],
-    ],
+    },
     limit,
     offset,
   });
@@ -76,16 +63,6 @@ router.get("/", queryValidation, async (req, res, _next) => {
 
 //Get Current User Spots
 router.get("/current", requireAuthentication, async (req, res, _next) => {
-  const avgRating = [
-    Sequelize.cast(
-      Sequelize.literal(
-        "(SELECT AVG(stars) FROM Reviews WHERE Reviews.spotId = Spot.id)"
-      ),
-      "FLOAT"
-    ),
-    "avgRating",
-  ];
-
   const currentUserSpots = await Spot.findAll({
     where: {
       ownerId: req.user.id,
@@ -104,9 +81,20 @@ router.get("/current", requireAuthentication, async (req, res, _next) => {
       "price",
       "createdAt",
       "updatedAt",
-      avgRating,
+    ],
+    include: [
+      [
+        Sequelize.cast(
+          Sequelize.literal(
+            `(SELECT AVG("stars") FROM "swift_oasis"."Reviews" WHERE "swift_oasis"."Reviews"."spotId" = "Spot"."id")`
+          ),
+          "FLOAT"
+        ),
+        "avgRating",
+      ],
     ],
   });
+
   return res.status(200).json({
     Spots: currentUserSpots,
   });
