@@ -5,7 +5,7 @@ const spotsRouter = require("./spots.js");
 const reviewsRouter = require("./reviews.js");
 const bookingsRouter = require("./bookings.js");
 
-const { restoreUser, requireAuth } = require("../../utils/auth.js");
+const { restoreUser, requireAuthentication } = require("../../utils/auth.js");
 
 const { Image, Review, Spot } = require("../../db/models");
 
@@ -23,36 +23,40 @@ router.use("/bookings", bookingsRouter);
 // });
 
 //Delete Spot Image
-router.delete("/spot-images/:imageId", requireAuth, async (req, res, _next) => {
-  const image = await Image.findOne({
-    where: {
-      id: req.params.imageId,
-      imageableType: "Spot",
-    },
-  });
+router.delete(
+  "/spot-images/:imageId",
+  requireAuthentication,
+  async (req, res, _next) => {
+    const image = await Image.findOne({
+      where: {
+        id: req.params.imageId,
+        imageableType: "Spot",
+      },
+    });
 
-  if (!image) {
-    return res.status(404).json({ message: "Spot image couldn't be found" });
+    if (!image) {
+      return res.status(404).json({ message: "Spot image couldn't be found" });
+    }
+
+    const spot = await Spot.findByPk(image.imageableId);
+    if (spot.ownerId !== req.user.id) {
+      return res
+        .status(403)
+        .json({ message: "You do not have permission to delete this image" });
+    }
+
+    await image.destroy();
+
+    return res.status(200).json({
+      message: "Successfully deleted",
+    });
   }
-
-  const spot = await Spot.findByPk(image.imageableId);
-  if (spot.ownerId !== req.user.id) {
-    return res
-      .status(403)
-      .json({ message: "You do not have permission to delete this image" });
-  }
-
-  await image.destroy();
-
-  return res.status(200).json({
-    message: "Successfully deleted",
-  });
-});
+);
 
 //Delete Review Spot
 router.delete(
   "/review-images/:imageId",
-  requireAuth,
+  requireAuthentication,
   async (req, res, _next) => {
     const image = await Image.findOne({
       where: {

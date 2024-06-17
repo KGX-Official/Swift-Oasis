@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const sequelize = require("sequelize");
-const { requireAuth } = require("../../utils/auth");
+const { requireAuthentication } = require("../../utils/auth");
 const { User, Spot, Booking, Review, Image } = require("../../db/models");
 const {
   bookingValidation,
@@ -9,7 +9,7 @@ const {
 } = require("../../utils/validation");
 
 //Current User Bookings
-router.get("/current", requireAuth, async (req, res, _next) => {
+router.get("/current", requireAuthentication, async (req, res, _next) => {
   const currentUserBookings = await Booking.findAll({
     where: {
       userId: req.user.id,
@@ -43,7 +43,7 @@ router.get("/current", requireAuth, async (req, res, _next) => {
 //Edit Booking
 router.put(
   "/:bookingId",
-  requireAuth,
+  requireAuthentication,
   bookingValidation,
   checkBookingConflict,
   async (req, res, _next) => {
@@ -79,7 +79,7 @@ router.put(
 );
 
 //Delete Booking
-router.delete("/:bookingId", requireAuth, async (req, res, next) => {
+router.delete("/:bookingId", requireAuthentication, async (req, res, next) => {
   const booking = await Booking.findByPk(req.params.bookingId);
 
   const spot = await Spot.findByPk(booking.spotId);

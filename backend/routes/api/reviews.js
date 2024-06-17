@@ -1,12 +1,12 @@
 const express = require("express");
 const router = express.Router();
 const sequelize = require("sequelize");
-const { requireAuth } = require("../../utils/auth");
+const { requireAuthentication } = require("../../utils/auth");
 const { Review, Image, Spot, User } = require("../../db/models");
 const { reviewValidation } = require("../../utils/validation");
 
 //Get Current User Reviews
-router.get("/current", requireAuth, async (req, res, _next) => {
+router.get("/current", requireAuthentication, async (req, res, _next) => {
   const currentUserReviews = await Review.findAll({
     where: {
       userId: req.user.id,
@@ -29,7 +29,8 @@ router.get("/current", requireAuth, async (req, res, _next) => {
           "lng",
           "name",
           "price",
-          [//Use Spot.id due to nesting
+          [
+            //Use Spot.id due to nesting
             sequelize.literal(
               "(SELECT url FROM Images WHERE Images.imageableId = Spot.id AND imageableType = 'Spot' LIMIT 1)"
             ),
@@ -50,50 +51,54 @@ router.get("/current", requireAuth, async (req, res, _next) => {
 });
 
 //Add Review Image
-router.post("/:reviewId/images", requireAuth, async (req, res, _next) => {
-  const review = await Review.findByPk(req.params.reviewId);
+router.post(
+  "/:reviewId/images",
+  requireAuthentication,
+  async (req, res, _next) => {
+    const review = await Review.findByPk(req.params.reviewId);
 
-  if (!review) {
-    return res.status(404).json({
-      message: "Review couldn't be found",
+    if (!review) {
+      return res.status(404).json({
+        message: "Review couldn't be found",
+      });
+    }
+    if (review.userId !== req.user.id) {
+      return res
+        .status(403)
+        .json({ message: "You do not have permission to update this review" });
+    }
+
+    const reviewImages = await Image.findAll({
+      where: {
+        imageableId: req.params.reviewId,
+        imageableType: "Review",
+      },
     });
-  }
-  if (review.userId !== req.user.id) {
-    return res
-      .status(403)
-      .json({ message: "You do not have permission to update this review" });
-  }
 
-  const reviewImages = await Image.findAll({
-    where: {
+    if (reviewImages.length === 10) {
+      return res.status(403).json({
+        message: "Maximum number of images for this resource was reached",
+      });
+    }
+    const { url } = req.body;
+    const newReviewImage = await Image.create({
       imageableId: req.params.reviewId,
       imageableType: "Review",
-    },
-  });
+      url: url,
+      preview: false,
+    });
 
-  if (reviewImages.length === 10) {
-    return res.status(403).json({
-      message: "Maximum number of images for this resource was reached",
+    return res.status(201).json({
+      id: newReviewImage.id,
+      url: newReviewImage.url,
     });
   }
-  const { url } = req.body;
-  const newReviewImage = await Image.create({
-    imageableId: req.params.reviewId,
-    imageableType: "Review",
-    url: url,
-    preview: false,
-  });
-
-  return res.status(201).json({
-    id: newReviewImage.id,
-    url: newReviewImage.url,
-  });
-});
+);
 
 //Edit Review
 router.put(
   "/:reviewId",
-  requireAuth,
+  requireAuthentication,
   reviewValidation,
   async (req, res, next) => {
     const review = await Review.findByPk(req.params.reviewId);
@@ -119,7 +124,7 @@ router.put(
   }
 );
 
-router.delete("/:reviewId", requireAuth, async (req, res, next) => {
+router.delete("/:reviewId", requireAuthentication, async (req, res, next) => {
   const review = await Review.findByPk(req.params.reviewId);
 
   if (!review) {
