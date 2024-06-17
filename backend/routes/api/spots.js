@@ -26,6 +26,20 @@ router.get("/", queryValidation, async (req, res, _next) => {
   const limit = size;
   const offset = size * (page - 1);
 
+  const avgRating = [
+    Sequelize.literal(
+      `(SELECT AVG("stars") FROM "swift_oasis"."Reviews" WHERE "swift_oasis"."Reviews"."spotId" = "Spot"."id")`
+    ),
+    "avgRating",
+  ];
+
+  const previewImage = [
+    Sequelize.literal(
+      '(SELECT "url" FROM "swift_oasis"."Images" WHERE "swift_oasis"."Images"."imageableId" = "Spot"."id" AND "swift_oasis"."Images"."imageableType" = "Spot" LIMIT 1)'
+    ),
+    "previewImage",
+  ];
+
   const allSpots = await Spot.findAll({
     attributes: [
       "id",
@@ -41,37 +55,15 @@ router.get("/", queryValidation, async (req, res, _next) => {
       "price",
       "createdAt",
       "updatedAt",
+      avgRating,
+      previewImage,
     ],
     limit,
     offset,
   });
 
-  const spotDetails = await Promise.all(
-    allSpots.map(async (spot) => {
-      const avgRating = await Review.findOne({
-        attributes: [
-          [Sequelize.fn("AVG", Sequelize.col("stars")), "avgRating"],
-        ],
-        where: { spotId: spot.id },
-        raw: true,
-      });
-
-      const previewImage = await Image.findOne({
-        attributes: ["url"],
-        where: { imageableId: spot.id, imageableType: "Spot" },
-        raw: true,
-      });
-
-      return {
-        ...spot.toJSON(),
-        avgRating: avgRating ? parseFloat(avgRating.avgRating) : null,
-        previewImage: previewImage ? previewImage.url : null
-      };
-    })
-  );
-
   return res.json({
-    Spots: spotDetails,
+    Spots: allSpots,
     page,
     size,
   });
