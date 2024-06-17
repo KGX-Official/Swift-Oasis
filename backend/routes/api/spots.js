@@ -26,20 +26,6 @@ router.get("/", queryValidation, async (req, res, _next) => {
   const limit = size;
   const offset = size * (page - 1);
 
-  const avgStarRating = [
-    Sequelize.literal(
-      "(SELECT AVG(stars) FROM Reviews WHERE Reviews.spotId = Spot.id)"
-    ),
-    "avgRating",
-  ];
-
-  const previewImage = [
-    Sequelize.literal(
-      "(SELECT url FROM Images WHERE Images.imageableId = Spot.id AND imageableType = 'Spot' LIMIT 1)"
-    ),
-    "previewImage",
-  ];
-
   const allSpots = await Spot.findAll({
     attributes: [
       "id",
@@ -60,8 +46,32 @@ router.get("/", queryValidation, async (req, res, _next) => {
     offset,
   });
 
+  const spotDetails = await Promise.all(
+    allSpots.map(async (spot) => {
+      const avgRating = await Review.findOne({
+        attributes: [
+          [Sequelize.fn("AVG", Sequelize.col("stars")), "avgRating"],
+        ],
+        where: { spotId: spot.id },
+        raw: true,
+      });
+
+      const previewImage = await Image.findOne({
+        attributes: ["url"],
+        where: { imageableId: spot.id, imageableType: "Spot" },
+        raw: true,
+      });
+
+      return {
+        ...spot.toJSON(),
+        avgRating: avgRating,
+        previewImage: previewImage,
+      };
+    })
+  );
+
   return res.json({
-    Spots: allSpots,
+    Spots: spotDetails,
     page,
     size,
   });
@@ -128,9 +138,9 @@ router.get("/:spotId", async (req, res, next) => {
 
   const numReviews = await Review.count({
     where: {
-      spotId: req.params.spotId
-    }
-  })
+      spotId: req.params.spotId,
+    },
+  });
 
   const spot = await Spot.findOne({
     where: {
