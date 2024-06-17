@@ -71,26 +71,59 @@ router.get("/", queryValidation, async (req, res, _next) => {
 
 //Get Current User Spots
 router.get("/current", requireAuthentication, async (req, res, _next) => {
+  const avgRating = [
+    cast(
+      literal(
+        "(SELECT AVG(stars) FROM Reviews WHERE Reviews.spotId = Spot.id)"
+      ),
+      "FLOAT"
+    ),
+    "avgRating",
+  ];
   const currentUserSpots = await Spot.findAll({
     where: {
       ownerId: req.user.id,
     },
+    attributes: [
+      "id",
+      "ownerId",
+      "address",
+      "city",
+      "state",
+      "country",
+      "lat",
+      "lng",
+      "name",
+      "description",
+      "price",
+      "createdAt",
+      "updatedAt",
+      avgRating,
+    ],
   });
-  return res.status(200).json(currentUserSpots);
+  return res.status(200).json({
+    Spots: currentUserSpots,
+  });
 });
 
 //Get Spot Details
 router.get("/:spotId", async (req, res, next) => {
   const avgStarRating = [
-    sequelize.literal(
-      "(SELECT AVG(stars) FROM Reviews WHERE Reviews.spotId = Spot.id)"
+    sequelize.cast(
+      sequelize.literal(
+        "(SELECT AVG(stars) FROM Reviews WHERE Reviews.spotId = Spot.id)"
+      ),
+      "FLOAT"
     ),
     "avgStarRating",
   ];
 
   const numReviews = [
-    sequelize.literal(
-      "(SELECT COUNT(*) FROM Reviews WHERE Reviews.spotId = Spot.id)"
+    sequelize.cast(
+      sequelize.literal(
+        "(SELECT COUNT(*) FROM Reviews WHERE Reviews.spotId = Spot.id)"
+      ),
+      "INTEGER"
     ),
     "numReviews",
   ];
@@ -132,7 +165,6 @@ router.get("/:spotId", async (req, res, next) => {
         attributes: ["id", "firstName", "lastName"],
       },
     ],
-    // group: ["Spot.id"],
   });
 
   if (!spot) {
@@ -259,17 +291,17 @@ router.put(
 );
 
 //Delete Spot
-router.delete("/:spotId", async (req, res, _next) => {
+router.delete("/:spotId", requireAuthentication, async (req, res, _next) => {
   const spot = await Spot.findByPk(req.params.spotId);
 
   if (!spot) {
-    return res.status(404).json({ error: "Spot couldn't be found" });
+    return res.status(404).json({ message: "Spot couldn't be found" });
   }
 
   if (spot.ownerId !== req.user.id) {
     return res
       .status(403)
-      .json({ error: "You do not have permission to remove this spot" });
+      .json({ message: "Forbidden" });
   }
 
   await spot.destroy();
