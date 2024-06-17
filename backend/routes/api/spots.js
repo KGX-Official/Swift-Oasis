@@ -32,11 +32,10 @@ router.get("/", queryValidation, async (req, res, _next) => {
     ),
     "avgRating",
   ];
-  
-  let imageType = "Spot"
+
   const previewImage = [
     Sequelize.literal(
-      `(SELECT "url" FROM "swift_oasis"."Images" WHERE "swift_oasis"."Images"."imageableId" = "Spot"."id" AND "swift_oasis"."Images"."imageableType" = ${imageType} LIMIT 1)`
+      `(SELECT "url" FROM "swift_oasis"."Images" WHERE "swift_oasis"."Images"."imageableId" = "Spot"."id" AND "swift_oasis"."Images"."imageableType" = 'Spot' LIMIT 1)`
     ),
     "previewImage",
   ];
@@ -81,6 +80,7 @@ router.get("/current", requireAuthentication, async (req, res, _next) => {
     ),
     "avgRating",
   ];
+
   const currentUserSpots = await Spot.findAll({
     where: {
       ownerId: req.user.id,
