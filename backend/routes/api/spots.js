@@ -26,23 +26,19 @@ router.get("/", queryValidation, async (req, res, _next) => {
   const limit = size;
   const offset = size * (page - 1);
 
-  // const avgStarRating = [
-  //   sequelize.literal(
-  //     "(SELECT AVG(stars) FROM Reviews WHERE Reviews.spotId = Spot.id)"
-  //   ),
-  //   "avgRating",
-  // ];
+  const avgStarRating = [
+    Sequelize.literal(
+      "(SELECT AVG(stars) FROM Reviews WHERE Reviews.spotId = Spot.id)"
+    ),
+    "avgRating",
+  ];
 
-  const avgStarRating = await Review.findAll({
-    attributes: [[Sequelize.fn("avg", Sequelize.col("stars")), "avgRating"]],
-  });
-
-  // const previewImage = [
-  //   sequelize.literal(
-  //     "(SELECT url FROM Images WHERE Images.imageableId = Spot.id AND imageableType = 'Spot' LIMIT 1)"
-  //   ),
-  //   "previewImage",
-  // ];
+  const previewImage = [
+    Sequelize.literal(
+      "(SELECT url FROM Images WHERE Images.imageableId = Spot.id AND imageableType = 'Spot' LIMIT 1)"
+    ),
+    "previewImage",
+  ];
 
   const allSpots = await Spot.findAll({
     attributes: [
@@ -59,8 +55,6 @@ router.get("/", queryValidation, async (req, res, _next) => {
       "price",
       "createdAt",
       "updatedAt",
-      avgStarRating,
-      // previewImage,
     ],
     limit,
     offset,
@@ -76,8 +70,8 @@ router.get("/", queryValidation, async (req, res, _next) => {
 //Get Current User Spots
 router.get("/current", requireAuthentication, async (req, res, _next) => {
   const avgRating = [
-    sequelize.cast(
-      sequelize.literal(
+    Sequelize.cast(
+      Sequelize.literal(
         "(SELECT AVG(stars) FROM Reviews WHERE Reviews.spotId = Spot.id)"
       ),
       "FLOAT"
@@ -113,8 +107,8 @@ router.get("/current", requireAuthentication, async (req, res, _next) => {
 //Get Spot Details
 router.get("/:spotId", async (req, res, next) => {
   const avgStarRating = [
-    sequelize.cast(
-      sequelize.literal(
+    Sequelize.cast(
+      Sequelize.literal(
         "(SELECT AVG(stars) FROM Reviews WHERE Reviews.spotId = Spot.id)"
       ),
       "FLOAT"
@@ -122,15 +116,21 @@ router.get("/:spotId", async (req, res, next) => {
     "avgStarRating",
   ];
 
-  const numReviews = [
-    sequelize.cast(
-      sequelize.literal(
-        "(SELECT COUNT(*) FROM Reviews WHERE Reviews.spotId = Spot.id)"
-      ),
-      "INTEGER"
-    ),
-    "numReviews",
-  ];
+  // const numReviews = [
+  //   Sequelize.cast(
+  //     Sequelize.literal(
+  //       "(SELECT COUNT(*) FROM Reviews WHERE Reviews.spotId = Spot.id)"
+  //     ),
+  //     "INTEGER"
+  //   ),
+  //   "numReviews",
+  // ];
+
+  const numReviews = await Review.count({
+    where: {
+      spotId: req.params.spotId
+    }
+  })
 
   const spot = await Spot.findOne({
     where: {
