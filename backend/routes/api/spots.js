@@ -224,7 +224,7 @@ router.post(
     if (spot.ownerId !== req.user.id) {
       return res
         .status(403)
-        .json({ error: "You do not have permission to update this spot" });
+        .json({ message: "You do not have permission to update this spot" });
     }
 
     const { url, preview } = req.body;
@@ -259,7 +259,7 @@ router.put(
     if (spot.ownerId !== req.user.id) {
       return res
         .status(403)
-        .json({ error: "You do not have permission to update this spot" });
+        .json({ message: "You do not have permission to update this spot" });
     }
 
     const {
@@ -363,12 +363,12 @@ router.post(
         .json({ message: "User already has a review for this spot" });
     }
 
-    const { newReview, stars } = req.body;
+    const { review, stars } = req.body;
 
     const spotReview = await Review.create({
       userId: req.user.id,
       spotId: req.params.spotId,
-      review: newReview,
+      review: review,
       stars: stars,
     });
 
