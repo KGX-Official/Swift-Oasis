@@ -18,6 +18,12 @@ router.get("/", queryValidation, async (req, res, _next) => {
 
   page = parseInt(req.query.page, 10) || 1;
   size = parseInt(req.query.size, 10) || 20;
+  minLat = parseFloat(req.query.minLat);
+  maxLat = parseFloat(req.query.maxLat);
+  minLng = parseFloat(req.query.minLng);
+  maxLng = parseFloat(req.query.maxLng);
+  minPrice = parseInt(req.query.minPrice);
+  maxPrice = parseInt(req.query.maxPrice);
 
   if (size > 20) {
     size = 20;
@@ -25,20 +31,6 @@ router.get("/", queryValidation, async (req, res, _next) => {
 
   const limit = size;
   const offset = size * (page - 1);
-
-  const avgRating = [
-    Sequelize.literal(
-      `(SELECT AVG("stars") FROM "swift_oasis"."Reviews" WHERE "swift_oasis"."Reviews"."spotId" = "Spot"."id")`
-    ),
-    "avgRating",
-  ];
-
-  const previewImage = [
-    Sequelize.literal(
-      `(SELECT "url" FROM "swift_oasis"."Images" WHERE "swift_oasis"."Images"."imageableId" = "Spot"."id" AND "swift_oasis"."Images"."imageableType" = 'Spot' LIMIT 1)`
-    ),
-    "previewImage",
-  ];
 
   const allSpots = await Spot.findAll({
     attributes: [
@@ -55,8 +47,21 @@ router.get("/", queryValidation, async (req, res, _next) => {
       "price",
       "createdAt",
       "updatedAt",
-      avgRating,
-      previewImage,
+    ],
+    include: [
+      [
+        Sequelize.literal(
+          `(SELECT AVG("stars") FROM "swift_oasis"."Reviews" WHERE "swift_oasis"."Reviews"."spotId" = "Spot"."id")`
+        ),
+        "avgRating",
+      ],
+
+      [
+        Sequelize.literal(
+          `(SELECT "url" FROM "swift_oasis"."Images" WHERE "swift_oasis"."Images"."imageableId" = "Spot"."id" AND "swift_oasis"."Images"."imageableType" = 'Spot' LIMIT 1)`
+        ),
+        "previewImage",
+      ],
     ],
     limit,
     offset,
