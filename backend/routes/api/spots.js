@@ -72,8 +72,8 @@ router.get("/", queryValidation, async (req, res, _next) => {
 //Get Current User Spots
 router.get("/current", requireAuthentication, async (req, res, _next) => {
   const avgRating = [
-    cast(
-      literal(
+    sequelize.cast(
+      sequelize.literal(
         "(SELECT AVG(stars) FROM Reviews WHERE Reviews.spotId = Spot.id)"
       ),
       "FLOAT"
