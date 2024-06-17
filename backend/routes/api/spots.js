@@ -67,32 +67,19 @@ router.get("/current", requireAuthentication, async (req, res, _next) => {
     where: {
       ownerId: req.user.id,
     },
-    attributes: [
-      "id",
-      "ownerId",
-      "address",
-      "city",
-      "state",
-      "country",
-      "lat",
-      "lng",
-      "name",
-      "description",
-      "price",
-      "createdAt",
-      "updatedAt",
-    ],
-    include: [
-      [
-        Sequelize.cast(
-          Sequelize.literal(
-            `(SELECT AVG("stars") FROM "swift_oasis"."Reviews" WHERE "swift_oasis"."Reviews"."spotId" = "Spot"."id")`
+    attributes: {
+      include: [
+        [
+          Sequelize.cast(
+            Sequelize.literal(
+              `(SELECT AVG("stars") FROM "swift_oasis"."Reviews" WHERE "swift_oasis"."Reviews"."spotId" = "Spot"."id")`
+            ),
+            "FLOAT"
           ),
-          "FLOAT"
-        ),
-        "avgRating",
+          "avgRating",
+        ],
       ],
-    ],
+    },
   });
 
   return res.status(200).json({
@@ -112,21 +99,21 @@ router.get("/:spotId", async (req, res, next) => {
     "avgStarRating",
   ];
 
-  // const numReviews = [
-  //   Sequelize.cast(
-  //     Sequelize.literal(
-  //       "(SELECT COUNT(*) FROM Reviews WHERE Reviews.spotId = Spot.id)"
-  //     ),
-  //     "INTEGER"
-  //   ),
-  //   "numReviews",
-  // ];
+  const numReviews = [
+    Sequelize.cast(
+      Sequelize.literal(
+        "(SELECT COUNT(*) FROM Reviews WHERE Reviews.spotId = Spot.id)"
+      ),
+      "INTEGER"
+    ),
+    "numReviews",
+  ];
 
-  const numReviews = await Review.count({
-    where: {
-      spotId: req.params.spotId,
-    },
-  });
+  // const numReviews = await Review.count({
+  //   where: {
+  //     spotId: req.params.spotId,
+  //   },
+  // });
 
   const spot = await Spot.findOne({
     where: {

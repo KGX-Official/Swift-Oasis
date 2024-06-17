@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const sequelize = require("sequelize");
+const Sequelize = require("sequelize");
 const { requireAuthentication } = require("../../utils/auth");
 const { Review, Image, Spot, User } = require("../../db/models");
 const { reviewValidation } = require("../../utils/validation");
@@ -18,25 +18,17 @@ router.get("/current", requireAuthentication, async (req, res, _next) => {
       },
       {
         model: Spot,
-        attributes: [
-          "id",
-          "ownerId",
-          "address",
-          "city",
-          "state",
-          "country",
-          "lat",
-          "lng",
-          "name",
-          "price",
-          [
-            //Use Spot.id due to nesting
-            Sequelize.literal(
-              "(SELECT url FROM Images WHERE Images.imageableId = Spot.id AND imageableType = 'Spot' LIMIT 1)"
-            ),
-            "previewImage",
+        attributes: {
+          exclude: ["createdAt", "updatedAt", "description"],
+          include: [
+            [
+              Sequelize.literal(
+                `(SELECT "url" FROM "swift_oasis"."Images" WHERE "swift_oasis"."Images"."imageableId" = "Spot"."id" AND "swift_oasis"."Images"."imageableType" = 'Spot' LIMIT 1)`
+              ),
+              "previewImage",
+            ],
           ],
-        ],
+        },
       },
       {
         model: Image,
