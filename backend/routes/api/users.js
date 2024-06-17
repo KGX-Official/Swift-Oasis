@@ -4,6 +4,7 @@ const saltRounds = 10;
 
 const { setTokenCookie } = require("../../utils/auth");
 const { User } = require("../../db/models");
+const { Op } = require("sequelize")
 
 const router = express.Router();
 
