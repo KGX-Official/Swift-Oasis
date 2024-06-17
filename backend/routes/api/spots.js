@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const sequelize = require("sequelize");
+const Sequelize = require("sequelize");
 const { requireAuthentication } = require("../../utils/auth");
 const { User, Spot, Image, Review, Booking } = require("../../db/models");
 const {
@@ -33,6 +33,10 @@ router.get("/", queryValidation, async (req, res, _next) => {
   //   "avgRating",
   // ];
 
+  const avgStarRating = await Review.findAll({
+    attributes: [[Sequelize.fn("avg", Sequelize.col("stars")), "avgRating"]],
+  });
+
   // const previewImage = [
   //   sequelize.literal(
   //     "(SELECT url FROM Images WHERE Images.imageableId = Spot.id AND imageableType = 'Spot' LIMIT 1)"
@@ -55,7 +59,7 @@ router.get("/", queryValidation, async (req, res, _next) => {
       "price",
       "createdAt",
       "updatedAt",
-      // avgStarRating,
+      avgStarRating,
       // previewImage,
     ],
     limit,
