@@ -64,8 +64,8 @@ router.get("/", queryValidation, async (req, res, _next) => {
 
       return {
         ...spot.toJSON(),
-        avgRating: parseFloat(avgRating),
-        previewImage: previewImage,
+        avgRating: avgRating ? parseFloat(avgRating.avgRating) : null,
+        previewImage: previewImage ? previewImage.url : null
       };
     })
   );
