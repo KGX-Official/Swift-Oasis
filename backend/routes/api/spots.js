@@ -16,14 +16,14 @@ router.get("/", queryValidation, async (req, res, _next) => {
   let { page, size, minLat, maxLat, minLng, maxLng, minPrice, maxPrice } =
     req.query;
 
-  page = parseInt(req.query.page, 10) || 1;
-  size = parseInt(req.query.size, 10) || 20;
-  minLat = parseFloat(req.query.minLat);
-  maxLat = parseFloat(req.query.maxLat);
-  minLng = parseFloat(req.query.minLng);
-  maxLng = parseFloat(req.query.maxLng);
-  minPrice = parseInt(req.query.minPrice);
-  maxPrice = parseInt(req.query.maxPrice);
+  page = parseInt(page, 10) || 1;
+  size = parseInt(size, 10) || 20;
+  minLat = parseFloat(minLat);
+  maxLat = parseFloat(maxLat);
+  minLng = parseFloat(minLng);
+  maxLng = parseFloat(maxLng);
+  minPrice = parseInt(minPrice);
+  maxPrice = parseInt(maxPrice);
 
   if (size > 20) {
     size = 20;
@@ -36,8 +36,11 @@ router.get("/", queryValidation, async (req, res, _next) => {
     attributes: {
       include: [
         [
-          Sequelize.literal(
-            `(SELECT AVG("stars") FROM "swift_oasis"."Reviews" WHERE "swift_oasis"."Reviews"."spotId" = "Spot"."id")`
+          Sequelize.cast(
+            Sequelize.literal(
+              `(SELECT ROUND (AVG("stars"), 1) FROM "swift_oasis"."Reviews" WHERE "swift_oasis"."Reviews"."spotId" = "Spot"."id")`
+            ),
+            "FLOAT"
           ),
           "avgRating",
         ],
@@ -72,7 +75,7 @@ router.get("/current", requireAuthentication, async (req, res, _next) => {
         [
           Sequelize.cast(
             Sequelize.literal(
-              `(SELECT AVG("stars") FROM "swift_oasis"."Reviews" WHERE "swift_oasis"."Reviews"."spotId" = "Spot"."id")`
+              `(SELECT ROUND (AVG("stars"), 1) FROM "swift_oasis"."Reviews" WHERE "swift_oasis"."Reviews"."spotId" = "Spot"."id")`
             ),
             "FLOAT"
           ),
@@ -89,53 +92,32 @@ router.get("/current", requireAuthentication, async (req, res, _next) => {
 
 //Get Spot Details
 router.get("/:spotId", async (req, res, next) => {
-  const avgStarRating = [
-    Sequelize.cast(
-      Sequelize.literal(
-        "(SELECT AVG(stars) FROM Reviews WHERE Reviews.spotId = Spot.id)"
-      ),
-      "FLOAT"
-    ),
-    "avgStarRating",
-  ];
-
-  const numReviews = [
-    Sequelize.cast(
-      Sequelize.literal(
-        "(SELECT COUNT(*) FROM Reviews WHERE Reviews.spotId = Spot.id)"
-      ),
-      "INTEGER"
-    ),
-    "numReviews",
-  ];
-
-  // const numReviews = await Review.count({
-  //   where: {
-  //     spotId: req.params.spotId,
-  //   },
-  // });
-
   const spot = await Spot.findOne({
     where: {
       id: req.params.spotId,
     },
-    attributes: [
-      "id",
-      "ownerId",
-      "address",
-      "city",
-      "state",
-      "country",
-      "lat",
-      "lng",
-      "name",
-      "description",
-      "price",
-      "createdAt",
-      "updatedAt",
-      numReviews,
-      avgStarRating,
-    ],
+    attributes: {
+      include: [
+        [
+          Sequelize.cast(
+            Sequelize.literal(
+              "(SELECT COUNT(*) FROM Reviews WHERE Reviews.spotId = Spot.id)"
+            ),
+            "INTEGER"
+          ),
+          "numReviews",
+        ],
+        [
+          Sequelize.cast(
+            Sequelize.literal(
+              `(SELECT ROUND (AVG("stars"), 1) FROM "swift_oasis"."Reviews" WHERE "swift_oasis"."Reviews"."spotId" = "Spot"."id")`
+            ),
+            "FLOAT"
+          ),
+          "avgStarRating",
+        ],
+      ],
+    },
     include: [
       {
         model: Image,

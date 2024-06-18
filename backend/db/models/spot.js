@@ -72,7 +72,7 @@ module.exports = (sequelize, DataTypes) => {
         },
       },
       lat: {
-        type: DataTypes.DECIMAL(12, 8),
+        type: DataTypes.FLOAT,
         allowNull: false,
         validate: {
           notEmpty: true,
@@ -81,7 +81,7 @@ module.exports = (sequelize, DataTypes) => {
         },
       },
       lng: {
-        type: DataTypes.DECIMAL(12, 8),
+        type: DataTypes.FLOAT,
         allowNull: false,
         validate: {
           notEmpty: true,
@@ -105,7 +105,7 @@ module.exports = (sequelize, DataTypes) => {
         },
       },
       price: {
-        type: DataTypes.DECIMAL(10, 2),
+        type: DataTypes.FLOAT,
         allowNull: false,
         validate: {
           notEmpty: true,
