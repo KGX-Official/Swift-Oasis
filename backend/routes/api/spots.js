@@ -57,8 +57,16 @@ router.get("/", queryValidation, async (req, res, _next) => {
     offset,
   });
 
+  const allSpotsConverted = allSpots.toJSON();
+  const res =  {
+    ...allSpotsConverted,
+    lat: parseFloat(allSpotsConverted.lat),
+    lng: parseFloat(allSpotsConverted.lng),
+    price: parseFloat(allSpotsConverted.price),
+  };
+
   return res.json({
-    Spots: allSpots,
+    Spots: res,
     page,
     size,
   });
