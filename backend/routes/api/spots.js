@@ -58,7 +58,7 @@ router.get("/", queryValidation, async (req, res, _next) => {
   });
 
   const allSpotsConverted = allSpots.toJSON();
-  const res =  {
+  const spotRes =  {
     ...allSpotsConverted,
     lat: parseFloat(allSpotsConverted.lat),
     lng: parseFloat(allSpotsConverted.lng),
@@ -66,7 +66,7 @@ router.get("/", queryValidation, async (req, res, _next) => {
   };
 
   return res.json({
-    Spots: res,
+    Spots: spotRes,
     page,
     size,
   });
