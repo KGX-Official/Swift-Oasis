@@ -81,6 +81,12 @@ router.get("/current", requireAuthentication, async (req, res, _next) => {
           ),
           "avgRating",
         ],
+        [
+          Sequelize.literal(
+            `(SELECT "url" FROM "swift_oasis"."Images" WHERE "swift_oasis"."Images"."imageableId" = "Spot"."id" AND "swift_oasis"."Images"."imageableType" = 'Spot' LIMIT 1)`
+          ),
+          "previewImage",
+        ],
       ],
     },
   });
@@ -101,7 +107,7 @@ router.get("/:spotId", async (req, res, next) => {
         [
           Sequelize.cast(
             Sequelize.literal(
-              "(SELECT COUNT(*) FROM Reviews WHERE Reviews.spotId = Spot.id)"
+              `(SELECT COUNT(*) FROM "swift_oasis"."Reviews" WHERE "swift_oasis"."Reviews"."spotId" = "Spot"."id")`
             ),
             "INTEGER"
           ),
