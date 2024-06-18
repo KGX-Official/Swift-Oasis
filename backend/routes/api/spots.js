@@ -166,11 +166,11 @@ router.post(
       city,
       state,
       country,
-      lat: Number(lat),
-      lng: Number(lng),
+      lat,
+      lng,
       name,
       description,
-      price: Number(price),
+      price,
     });
 
     return res.status(201).json(spot);
