@@ -57,7 +57,7 @@ router.post(
     if (review.userId !== req.user.id) {
       return res
         .status(403)
-        .json({ message: "You do not have permission to update this review" });
+        .json({ message: "Forbidden"});
     }
 
     const reviewImages = await Image.findAll({
@@ -103,7 +103,7 @@ router.put(
     if (review.userId !== req.user.id) {
       return res
         .status(403)
-        .json({ message: "You do not have permission to update this review" });
+        .json({ message: "Forbidden"});
     }
 
     const { reviewEdit, starsEdit } = req.body;
@@ -127,7 +127,7 @@ router.delete("/:reviewId", requireAuthentication, async (req, res, next) => {
   if (review.userId !== req.user.id) {
     return res
       .status(403)
-      .json({ message: "You do not have permission to update this review" });
+      .json({ message: "Forbidden"});
   }
 
   await review.destroy();

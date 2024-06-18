@@ -193,7 +193,7 @@ router.post(
     if (spot.ownerId !== req.user.id) {
       return res
         .status(403)
-        .json({ message: "You do not have permission to update this spot" });
+        .json({ message: "Forbidden"});
     }
 
     const { url, preview } = req.body;
@@ -228,7 +228,7 @@ router.put(
     if (spot.ownerId !== req.user.id) {
       return res
         .status(403)
-        .json({ message: "You do not have permission to update this spot" });
+        .json({ message: "Forbidden"});
     }
 
     const {

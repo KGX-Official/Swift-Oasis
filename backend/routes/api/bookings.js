@@ -52,7 +52,7 @@ router.put(
     if (booking.userId !== req.user.id) {
       return res
         .status(403)
-        .json({ message: "You do not have permission to update this booking" });
+        .json({ message: "Forbidden"});
     }
 
     const currentDate = new Date();
@@ -86,7 +86,7 @@ router.delete("/:bookingId", requireAuthentication, async (req, res, next) => {
   if (booking.userId !== req.user.id || spot.ownerId !== req.user.id) {
     return res
       .status(403)
-      .json({ message: "You do not have permission to update this booking" });
+      .json({ message: "Forbidden"});
   }
 
   const currentDate = new Date();

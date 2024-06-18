@@ -42,7 +42,7 @@ router.delete(
     if (spot.ownerId !== req.user.id) {
       return res
         .status(403)
-        .json({ message: "You do not have permission to delete this image" });
+        .json({ message: "Forbidden" });
     }
 
     await image.destroy();
@@ -75,7 +75,7 @@ router.delete(
     if (review.userId !== req.user.id) {
       return res
         .status(403)
-        .json({ message: "You do not have permission to delete this image" });
+        .json({ message: "Forbidden" });
     }
 
     await image.destroy();
